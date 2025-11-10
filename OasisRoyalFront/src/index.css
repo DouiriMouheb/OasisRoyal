@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+/* Theme variables (used for custom components alongside Tailwind) */
+:root {
+  --black: 0 0% 0%;           /* pure black */
+  --red: 0 85% 50%;           /* vibrant red */
+  --gray: 0 0% 92%;           /* light gray background */
+  --text-white: 0 0% 100%;    /* white text */
+  --text-black: 0 0% 0%;      /* black text */
+  --text-red: 0 85% 50%;      /* red text */
+  --border-white: 0 0% 100%;  /* white border */
+  --border-black: 0 0% 0%;    /* black border */
+  --toast-success: 120 60% 45%; /* green for success toast */
+  --toast-error: 0 85% 50%;     /* red for error toast */
+  --toast-alert: 45 100% 51%;   /* yellow for alert toast */
+}
+
+/* Base page styles (kept minimal; prefer Tailwind utility classes in components) */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Inter, 'DM Sans', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background-color: hsl(var(--gray));
+  color: hsl(var(--text-black));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+* { box-sizing: border-box; }
+
+/* Modal card (uses theme variables) */
+.modal-card {
+  background: hsl(var(--gray));
+  color: hsl(var(--text-black));
+  border-radius: 1rem;
+  border: 2px solid hsl(var(--border-black));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+}
+
+/* Table helpers */
+table.app-table tbody tr:hover {
+  background: color-mix(in srgb, hsl(var(--panel, 0 0% 98%)) 90%, hsl(var(--bg, 0 0% 100%)));
+}
+table.app-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, hsl(var(--panel, 0 0% 98%)) 96%, hsl(var(--bg, 0 0% 100%)));
+}
+
+/* Buttons (fallbacks for components that use .btn classes) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem; /* gap-2 */
+  padding: 0.5rem 1rem; /* px-4 py-2 */
+  border-radius: 0.375rem; /* rounded-md */
+  font-weight: 600;
+  font-size: 0.875rem; /* text-sm */
+  border: 2px solid hsl(var(--border-black));
+  background: hsl(var(--black));
+  color: hsl(var(--text-white));
+}
+.btn-primary {
+  background: hsl(var(--red));
+  color: hsl(var(--text-white));
+  border-color: hsl(var(--red));
+}
+.btn-secondary {
+  background: hsl(var(--gray));
+  color: hsl(var(--text-black));
+  border-color: hsl(var(--border-black));
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+/* Inputs */
+.input {
+  padding: 0.5rem 0.75rem; /* px-3 py-2 */
+  border-radius: 0.375rem; /* rounded-md */
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid rgb(229 231 235); /* gray-200 */
+  color: rgb(17 24 39); /* gray-800 */
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fadeIn { animation: fadeIn 0.35s ease-out; }
+.animate-slideUp { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Accessibility focus-visible fallback */
+*:focus-visible { outline: 3px solid hsl(var(--red)); outline-offset: 2px; }
+
+/* Custom scrollbar (optional) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: hsl(var(--gray)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--black)); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--red)); }
+
