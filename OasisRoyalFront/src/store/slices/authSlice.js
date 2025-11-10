@@ -6,13 +6,21 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
+      console.log('🔐 LOGIN: Sending credentials:', { email: credentials.email })
       const response = await api.post('/users/login', credentials)
-      const { data } = response.data // Backend returns { success, data: { user, token }, message }
+      console.log('🔐 LOGIN: Raw API response:', response)
+      // api.js returns response.data, which is { success, data: { _id, name, email, role, token }, message }
+      // Extract the user data from the data property
+      const userData = response.data // This is { _id, name, email, role, token }
+      console.log('🔐 LOGIN: Extracted user data:', userData)
       // Store token and user in localStorage
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data))
-      return data
+      localStorage.setItem('token', userData.token)
+      localStorage.setItem('user', JSON.stringify(userData))
+      console.log('🔐 LOGIN: Stored in localStorage')
+      return userData
     } catch (error) {
+      console.error('🔐 LOGIN ERROR:', error)
+      console.error('🔐 LOGIN ERROR Response:', error.response)
       return rejectWithValue(error.response?.data?.message || 'Login failed')
     }
   }
@@ -22,13 +30,20 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
+      console.log('📝 REGISTER: Sending user data:', { ...userData, password: '***' })
       const response = await api.post('/users/register', userData)
-      const { data } = response.data // Backend returns { success, data: { user, token }, message }
+      console.log('📝 REGISTER: Raw API response:', response)
+      // api.js returns response.data, which is { success, data: { _id, name, email, role, token }, message }
+      const userInfo = response.data // This is { _id, name, email, role, token }
+      console.log('📝 REGISTER: Extracted user data:', userInfo)
       // Store token and user in localStorage
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data))
-      return data
+      localStorage.setItem('token', userInfo.token)
+      localStorage.setItem('user', JSON.stringify(userInfo))
+      console.log('📝 REGISTER: Stored in localStorage')
+      return userInfo
     } catch (error) {
+      console.error('📝 REGISTER ERROR:', error)
+      console.error('📝 REGISTER ERROR Response:', error.response)
       return rejectWithValue(error.response?.data?.message || 'Registration failed')
     }
   }
@@ -39,7 +54,9 @@ export const getUserProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/users/profile')
-      return response.data
+      // api.js returns response.data, backend returns { success, data: user }
+      // response is { success, data: user }
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile')
     }
@@ -51,11 +68,13 @@ export const updateUserProfile = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await api.put('/users/profile', userData)
+      // api.js returns response.data, backend returns { success, data: user }
+      // response is { success, data: user }
       // Update user in localStorage
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
       const updatedUser = { ...currentUser, ...response.data }
       localStorage.setItem('user', JSON.stringify(updatedUser))
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update profile')
     }
@@ -106,6 +125,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false
+        // action.payload is { _id, name, email, role, token }
         state.user = action.payload
         state.token = action.payload.token
         state.isAuthenticated = true
@@ -124,6 +144,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false
+        // action.payload is { _id, name, email, role, token }
         state.user = action.payload
         state.token = action.payload.token
         state.isAuthenticated = true
@@ -142,7 +163,8 @@ const authSlice = createSlice({
       })
       .addCase(getUserProfile.fulfilled, (state, action) => {
         state.loading = false
-        state.user = { ...state.user, ...action.payload }
+        // Backend returns { success, data: user }, api.js returns response.data
+        state.user = { ...state.user, ...action.payload.data }
         state.error = null
       })
       .addCase(getUserProfile.rejected, (state, action) => {
@@ -158,7 +180,8 @@ const authSlice = createSlice({
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         state.loading = false
-        state.user = { ...state.user, ...action.payload }
+        // Backend returns { success, data: user }, api.js returns response.data
+        state.user = { ...state.user, ...action.payload.data }
         state.error = null
       })
       .addCase(updateUserProfile.rejected, (state, action) => {

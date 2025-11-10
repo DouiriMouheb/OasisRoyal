@@ -29,7 +29,7 @@ export const fetchProductById = createAsyncThunk(
   async (productId, { rejectWithValue }) => {
     try {
       const response = await api.get(`/products/${productId}`)
-      return response.data
+      return response // api.js already returns response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch product')
     }
@@ -41,7 +41,7 @@ export const fetchFeaturedProducts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/products?featured=true&limit=8')
-      return response.data
+      return response // api.js already returns response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch featured products')
     }
@@ -123,7 +123,7 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProductById.fulfilled, (state, action) => {
         state.loading = false
-        state.selectedProduct = action.payload.data || action.payload
+        state.selectedProduct = action.payload.data
         state.error = null
       })
       .addCase(fetchProductById.rejected, (state, action) => {
@@ -139,7 +139,7 @@ const productsSlice = createSlice({
       })
       .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
         state.loading = false
-        state.featuredProducts = action.payload.data || action.payload
+        state.featuredProducts = action.payload.data
         state.error = null
       })
       .addCase(fetchFeaturedProducts.rejected, (state, action) => {

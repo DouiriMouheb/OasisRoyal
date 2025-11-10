@@ -1,4 +1,6 @@
-const Input = ({
+import { forwardRef } from 'react'
+
+const Input = forwardRef(({
   label,
   type = 'text',
   name,
@@ -11,7 +13,7 @@ const Input = ({
   disabled = false,
   icon,
   className = ''
-}) => {
+}, ref) => {
   return (
     <div className={`mb-4 ${className}`}>
       {label && (
@@ -29,6 +31,7 @@ const Input = ({
         )}
         
         <input
+          ref={ref}
           type={type}
           id={name}
           name={name}
@@ -53,6 +56,8 @@ const Input = ({
       )}
     </div>
   )
-}
+})
+
+Input.displayName = 'Input'
 
 export default Input

@@ -39,6 +39,12 @@ Card.Body = ({ children, className = '' }) => (
   </div>
 )
 
+Card.Header = ({ children, className = '' }) => (
+  <div className={`px-4 pt-4 pb-2 ${className}`}>
+    {children}
+  </div>
+)
+
 Card.Title = ({ children, className = '' }) => (
   <h3 className={`text-lg font-semibold text-gray-900 mb-2 ${className}`}>
     {children}

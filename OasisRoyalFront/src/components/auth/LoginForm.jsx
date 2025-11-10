@@ -31,11 +31,15 @@ const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
   })
   
   const onSubmit = async (data) => {
+    console.log('📋 FORM SUBMIT: Login form submitted with data:', data)
     setIsLoading(true)
     try {
-      await login(data.email, data.password)
+      console.log('📋 FORM: Calling login hook...')
+      const result = await login(data.email, data.password)
+      console.log('📋 FORM: Login result:', result)
       if (onSuccess) onSuccess()
     } catch (error) {
+      console.error('📋 FORM ERROR:', error)
       // Error handling is done in useAuth hook
     } finally {
       setIsLoading(false)

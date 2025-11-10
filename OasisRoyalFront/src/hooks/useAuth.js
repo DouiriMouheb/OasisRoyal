@@ -9,8 +9,11 @@ export const useAuth = () => {
   const { user, token, isAuthenticated, loading, error } = useSelector(state => state.auth)
   
   const login = async (email, password) => {
+    console.log('🔑 HOOK: Login called with:', { email, password: '***' })
     try {
+      console.log('🔑 HOOK: Dispatching loginUser action...')
       const result = await dispatch(loginUser({ email, password }))
+      console.log('🔑 HOOK: Dispatch result:', result)
       if (result.type === 'auth/login/fulfilled') {
         toast.success(`Welcome back, ${result.payload.name || 'User'}!`)
         return { success: true }
@@ -19,6 +22,7 @@ export const useAuth = () => {
         return { success: false, error: result.payload }
       }
     } catch (err) {
+      console.error('🔑 HOOK ERROR:', err)
       toast.error('An error occurred during login')
       return { success: false, error: err.message }
     }
