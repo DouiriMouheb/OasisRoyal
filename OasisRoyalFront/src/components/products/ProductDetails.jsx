@@ -234,7 +234,7 @@ const ProductDetails = () => {
               <Package className="w-5 h-5 text-amber-600 mt-0.5" />
               <div>
                 <p className="font-semibold text-gray-900">Premium Quality</p>
-                <p className="text-sm text-gray-600">Carefully selected Moroccan dates</p>
+                <p className="text-sm text-gray-600">Carefully selected Tunisia dates</p>
               </div>
             </div>
             <div className="flex items-start gap-3">

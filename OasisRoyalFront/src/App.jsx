@@ -14,6 +14,9 @@ import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import AdminProductsPage from './pages/admin/AdminProductsPage'
 import AdminProductCreatePage from './pages/admin/AdminProductCreatePage'
 import AdminProductEditPage from './pages/admin/AdminProductEditPage'
+import AdminCategoriesPage from './pages/admin/AdminCategoriesPage'
+import AdminCategoryCreatePage from './pages/admin/AdminCategoryCreatePage'
+import AdminCategoryEditPage from './pages/admin/AdminCategoryEditPage'
 
 export default function App() {
   return (
@@ -56,6 +59,9 @@ export default function App() {
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
           <Route path="/admin/products" element={<AdminProductsPage />} />
           <Route path="/admin/products/create" element={<AdminProductCreatePage />} />
+          <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+          <Route path="/admin/categories/create" element={<AdminCategoryCreatePage />} />
+          <Route path="/admin/categories/:id/edit" element={<AdminCategoryEditPage />} />
         </Routes>
       </main>
       <Footer />

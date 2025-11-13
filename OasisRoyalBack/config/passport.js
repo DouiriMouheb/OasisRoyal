@@ -1,3 +1,4 @@
+import './env.js' // Load environment variables first
 import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
@@ -5,21 +6,25 @@ import User from '../models/User.js'
 import logger from '../utils/logger.js'
 
 // Google OAuth Strategy - Only initialize if credentials are provided
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'your_google_client_id_here.apps.googleusercontent.com') {
+if (process.env.GOOGLE_CLIENT_ID && !process.env.GOOGLE_CLIENT_ID.startsWith('your_google_client_id_here')) {
   passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: '/api/auth/google/callback',
+        callbackURL: `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/auth/google/callback`,
         scope: ['profile', 'email']
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
+          logger.info('Google OAuth callback triggered')
+          logger.info('Profile data:', { id: profile.id, email: profile.emails?.[0]?.value, name: profile.displayName })
+          
           // Check if user already exists
           let user = await User.findOne({ email: profile.emails[0].value })
 
           if (user) {
+            logger.info(`Existing user found: ${user.email}`)
             // User exists, check if Google ID is linked
             if (!user.googleId) {
               user.googleId = profile.id
@@ -29,6 +34,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'your_googl
           }
 
           // Create new user
+          logger.info('Creating new user from Google profile')
           user = await User.create({
             name: profile.displayName,
             email: profile.emails[0].value,
@@ -42,6 +48,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'your_googl
           done(null, user)
         } catch (error) {
           logger.error('Google OAuth error:', error)
+          logger.error('Error stack:', error.stack)
           done(error, null)
         }
       }
@@ -53,13 +60,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'your_googl
 }
 
 // Facebook OAuth Strategy - Only initialize if credentials are provided
-if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_ID !== 'your_facebook_app_id_here') {
+if (process.env.FACEBOOK_APP_ID && !process.env.FACEBOOK_APP_ID.startsWith('your_facebook_app_id_here')) {
   passport.use(
     new FacebookStrategy(
       {
         clientID: process.env.FACEBOOK_APP_ID,
         clientSecret: process.env.FACEBOOK_APP_SECRET,
-        callbackURL: '/api/auth/facebook/callback',
+        callbackURL: `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/auth/facebook/callback`,
         profileFields: ['id', 'emails', 'name', 'picture.type(large)']
       },
       async (accessToken, refreshToken, profile, done) => {

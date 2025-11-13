@@ -1,9 +1,13 @@
-import express from 'express'
 import dotenv from 'dotenv'
+// Load env vars FIRST before any other imports
+dotenv.config()
+
+import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import swaggerUi from 'swagger-ui-express'
+
 import connectDB from './config/db.js'
 import swaggerSpec from './config/swagger.js'
 import passport from './config/passport.js'
@@ -19,9 +23,6 @@ import categoryRoutes from './routes/categoryRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 
-// Load env vars
-dotenv.config()
-
 // Connect to database
 connectDB()
 
@@ -33,9 +34,40 @@ app.use(express.urlencoded({ extended: true }))
 
 // Security middleware
 app.use(helmet())
+
+// CORS configuration - allows multiple origins
+const allowedOrigins = [
+  // Development URLs
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+  'http://localhost:8080',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  
+  // Production URLs from .env (supports comma-separated list)
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : []),
+  
+  // Add more URLs as needed:
+  // 'https://yourdomain.com',
+  // 'https://www.yourdomain.com',
+  // 'https://admin.yourdomain.com',
+].filter(Boolean) // Remove undefined values
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5174',
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true)
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
 // Initialize Passport

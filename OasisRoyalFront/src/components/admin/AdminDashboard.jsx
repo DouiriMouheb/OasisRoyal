@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { 
   Users, Package, ShoppingBag, DollarSign, 
-  TrendingUp
+  TrendingUp, Layers
 } from 'lucide-react'
 import { fetchDashboardStats } from '../../store/slices/adminSlice'
 import Loader from '../common/Loader'
@@ -72,6 +72,14 @@ const AdminDashboard = () => {
       color: 'text-amber-600',
       bgColor: 'bg-amber-50',
       link: '/admin/users'
+    },
+    {
+      title: 'Categories',
+      value: overview.totalCategories || 0,
+      icon: Layers,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+      link: '/admin/categories'
     }
   ]
   
@@ -97,7 +105,7 @@ const AdminDashboard = () => {
       </div>
       
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon
           return (

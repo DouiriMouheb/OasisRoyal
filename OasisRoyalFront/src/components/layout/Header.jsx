@@ -7,7 +7,6 @@ import CartButton from '../cart/CartButton'
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
   const { isAuthenticated, user } = useSelector(state => state.auth)
   const dispatch = useDispatch()
   
@@ -16,7 +15,7 @@ const Header = () => {
   }
   
   return (
-    <header className="bg-white shadow-md sticky top-0 z-40">
+    <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4">
         {/* Main Header */}
         <div className="flex items-center justify-between h-16">
@@ -43,13 +42,7 @@ const Header = () => {
           
           {/* Right Section */}
           <div className="flex items-center space-x-4">
-            {/* Search Icon */}
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-gray-700 hover:text-amber-600 transition-colors"
-            >
-              <Search className="w-5 h-5" />
-            </button>
+         
             
             {/* Cart */}
             <CartButton />
@@ -168,17 +161,7 @@ const Header = () => {
           </div>
         </div>
         
-        {/* Search Bar (Expandable) */}
-        {searchOpen && (
-          <div className="pb-4">
-            <input
-              type="text"
-              placeholder="Search for dates, gift boxes..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-              autoFocus
-            />
-          </div>
-        )}
+     
         
         {/* Mobile Menu */}
         {mobileMenuOpen && (

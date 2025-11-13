@@ -16,7 +16,7 @@ const Shop = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   
   const { products, loading, error, filters, pagination } = useSelector(state => state.products)
-  const { categories } = useSelector(state => state.categories)
+  const { items: categories } = useSelector(state => state.categories)
   
   // Sync URL params with Redux filters on mount
   useEffect(() => {

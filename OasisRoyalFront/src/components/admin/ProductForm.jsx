@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { Save, X, Plus, Trash2, Image as ImageIcon } from 'lucide-react'
+import { Save, X, Plus, Trash2, Image as ImageIcon, Upload } from 'lucide-react'
 import {
   createProduct,
   updateProduct,
@@ -18,6 +18,7 @@ import Button from '../common/Button'
 import Card from '../common/Card'
 import Loader from '../common/Loader'
 import toast from 'react-hot-toast'
+import api from '../../store/api'
 
 const productSchema = yup.object({
   name: yup.string().required('Product name is required'),
@@ -37,7 +38,10 @@ const ProductForm = ({ mode = 'create' }) => {
   const { loading, error, successMessage } = useSelector(state => state.admin)
   const { selectedProduct, loading: productLoading } = useSelector(state => state.products)
   const { items: categories = [] } = useSelector(state => state.categories)
-  const [imageUrls, setImageUrls] = useState([''])
+  
+  const [images, setImages] = useState([])
+  const [imageFiles, setImageFiles] = useState([])
+  const [uploadingImages, setUploadingImages] = useState(false)
   
   const {
     register,
@@ -81,7 +85,7 @@ const ProductForm = ({ mode = 'create' }) => {
       setValue('isActive', selectedProduct.isActive !== false)
       
       if (selectedProduct.images && selectedProduct.images.length > 0) {
-        setImageUrls(selectedProduct.images.map(img => img.url))
+        setImages(selectedProduct.images)
       }
     }
   }, [selectedProduct, mode, setValue])
@@ -101,16 +105,79 @@ const ProductForm = ({ mode = 'create' }) => {
     }
   }, [error, dispatch])
   
-  const onSubmit = (data) => {
+  const handleImageFilesChange = (e) => {
+    const files = Array.from(e.target.files)
+    
+    if (files.length === 0) return
+    
+    // Validate file sizes
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        toast.error(`${file.name} is too large. Max size is 5MB`)
+        return false
+      }
+      return true
+    })
+    
+    if (validFiles.length === 0) return
+    
+    // Add files to state
+    setImageFiles(prev => [...prev, ...validFiles])
+    
+    // Create previews
+    validFiles.forEach(file => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImages(prev => [...prev, { url: reader.result, isNew: true }])
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+  
+  const handleRemoveImage = (index) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
+    setImageFiles(prev => prev.filter((_, i) => i !== index))
+  }
+  
+  const uploadImages = async () => {
+    if (imageFiles.length === 0) return []
+    
+    try {
+      setUploadingImages(true)
+      const formData = new FormData()
+      imageFiles.forEach(file => {
+        formData.append('images', file)
+      })
+      
+      const response = await api.post('/upload/multiple', formData)
+      
+      return response.data // response is already unwrapped, so response.data has array of { url, publicId }
+    } catch (err) {
+      console.error('Upload error:', err)
+      toast.error(err.response?.data?.message || 'Failed to upload images')
+      return []
+    } finally {
+      setUploadingImages(false)
+    }
+  }
+  
+  const onSubmit = async (data) => {
+    // Upload new images if any
+    const uploadedImages = await uploadImages()
+    
+    // Combine existing images (not new) with newly uploaded ones
+    const existingImages = images.filter(img => !img.isNew)
+    const allImages = [...existingImages, ...uploadedImages]
+    
+    if (allImages.length === 0) {
+      toast.error('Please add at least one product image')
+      return
+    }
+    
     const productData = {
       ...data,
-      images: imageUrls
-        .filter(url => url.trim() !== '')
-        .map((url, index) => ({
-          url: url.trim(),
-          publicId: `product-${Date.now()}-${index}`,
-          alt: data.name
-        }))
+      images: allImages
     }
     
     if (mode === 'edit' && id) {
@@ -121,17 +188,7 @@ const ProductForm = ({ mode = 'create' }) => {
   }
   
   const handleAddImage = () => {
-    setImageUrls([...imageUrls, ''])
-  }
-  
-  const handleRemoveImage = (index) => {
-    setImageUrls(imageUrls.filter((_, i) => i !== index))
-  }
-  
-  const handleImageUrlChange = (index, value) => {
-    const newUrls = [...imageUrls]
-    newUrls[index] = value
-    setImageUrls(newUrls)
+    document.getElementById('image-upload-input').click()
   }
   
   if (mode === 'edit' && productLoading) {
@@ -263,49 +320,60 @@ const ProductForm = ({ mode = 'create' }) => {
               onClick={handleAddImage}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Image
+              Add Images
             </Button>
           </Card.Header>
-          <Card.Body className="space-y-3">
-            {imageUrls.map((url, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <div className="flex-1">
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                    placeholder="Enter image URL"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-                {url && (
-                  <div className="w-16 h-16 border rounded-lg overflow-hidden">
-                    <img
-                      src={url}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/64'
-                      }}
-                    />
+          <Card.Body>
+            <input
+              id="image-upload-input"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageFilesChange}
+              className="hidden"
+            />
+            
+            {images.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {images.map((image, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square border-2 border-gray-200 rounded-lg overflow-hidden">
+                      <img
+                        src={image.url}
+                        alt={`Product ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    {index === 0 && (
+                      <div className="absolute bottom-2 left-2 bg-amber-600 text-white px-2 py-1 rounded text-xs font-medium">
+                        Main Image
+                      </div>
+                    )}
                   </div>
-                )}
-                {imageUrls.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="error"
-                    size="sm"
-                    onClick={() => handleRemoveImage(index)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
+                ))}
               </div>
-            ))}
-            {imageUrls.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <ImageIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                <p>No images added yet</p>
+            ) : (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+                <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-4">No images added yet</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAddImage}
+                >
+                  <Upload className="w-5 h-5 mr-2" />
+                  Upload Images
+                </Button>
+                <p className="text-sm text-gray-500 mt-2">
+                  JPG, PNG or WEBP (max 5MB per image)
+                </p>
               </div>
             )}
           </Card.Body>
@@ -353,16 +421,17 @@ const ProductForm = ({ mode = 'create' }) => {
             type="button"
             variant="outline"
             onClick={() => navigate('/admin/products')}
+            disabled={loading || uploadingImages}
           >
             Cancel
           </Button>
           <Button
             type="submit"
             variant="primary"
-            loading={loading}
+            loading={loading || uploadingImages}
           >
             <Save className="w-5 h-5 mr-2" />
-            {mode === 'edit' ? 'Update Product' : 'Create Product'}
+            {uploadingImages ? 'Uploading Images...' : mode === 'edit' ? 'Update Product' : 'Create Product'}
           </Button>
         </div>
       </form>

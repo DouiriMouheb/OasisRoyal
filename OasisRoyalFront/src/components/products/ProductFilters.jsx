@@ -7,6 +7,7 @@ import Button from '../common/Button'
 const ProductFilters = ({ categories = [] }) => {
   const dispatch = useDispatch()
   const { filters } = useSelector(state => state.products)
+  const { loading: categoriesLoading } = useSelector(state => state.categories)
   const [showFilters, setShowFilters] = useState(true)
   
   const handleCategoryChange = (categoryId) => {
@@ -56,7 +57,9 @@ const ProductFilters = ({ categories = [] }) => {
               <span className="text-gray-700">All Categories</span>
             </label>
             
-            {categories && categories.length > 0 ? (
+            {categoriesLoading ? (
+              <p className="text-sm text-gray-500 italic">Loading categories...</p>
+            ) : categories && categories.length > 0 ? (
               categories.map(category => (
                 <label key={category._id} className="flex items-center cursor-pointer">
                   <input
@@ -70,7 +73,7 @@ const ProductFilters = ({ categories = [] }) => {
                 </label>
               ))
             ) : (
-              <p className="text-sm text-gray-500 italic">Loading categories...</p>
+              <p className="text-sm text-gray-500 italic">No categories available</p>
             )}
           </div>
         </div>
