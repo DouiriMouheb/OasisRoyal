@@ -7,7 +7,6 @@ export const createOrder = createAsyncThunk(
   async (orderData, { rejectWithValue }) => {
     try {
       const response = await api.post('/orders', orderData)
-      console.log('📦 CREATE ORDER: response:', response)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create order')
@@ -20,7 +19,6 @@ export const fetchMyOrders = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/orders/me')
-      console.log('📦 FETCH MY ORDERS: response:', response)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders')
@@ -33,7 +31,6 @@ export const fetchOrderById = createAsyncThunk(
   async (orderId, { rejectWithValue }) => {
     try {
       const response = await api.get(`/orders/${orderId}`)
-      console.log('📦 FETCH ORDER BY ID: response:', response)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch order')
@@ -70,7 +67,6 @@ const ordersSlice = createSlice({
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.createLoading = false
-        console.log('📦 CREATE ORDER REDUCER: action.payload:', action.payload)
         const order = action.payload?.data || action.payload
         state.currentOrder = order
         // Only add to orders list if order exists and has _id
@@ -92,7 +88,6 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchMyOrders.fulfilled, (state, action) => {
         state.loading = false
-        console.log('📦 FETCH MY ORDERS REDUCER: action.payload:', action.payload)
         const payload = action.payload?.data || action.payload || []
         state.orders = Array.isArray(payload) ? payload : []
         state.error = null
@@ -110,7 +105,6 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchOrderById.fulfilled, (state, action) => {
         state.loading = false
-        console.log('📦 FETCH ORDER BY ID REDUCER: action.payload:', action.payload)
         state.currentOrder = action.payload?.data || action.payload
         state.error = null
       })

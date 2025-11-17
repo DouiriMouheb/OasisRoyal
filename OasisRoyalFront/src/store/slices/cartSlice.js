@@ -8,7 +8,6 @@ export const fetchCart = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/cart')
-      console.log('🛒 FETCH CART: response:', response)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch cart')
@@ -21,8 +20,6 @@ export const addToCartAsync = createAsyncThunk(
   async ({ productId, quantity = 1 }, { rejectWithValue }) => {
     try {
       const response = await api.post('/cart', { productId, quantity })
-      console.log('🛒 ADD TO CART: Raw response:', response)
-      console.log('🛒 ADD TO CART: response.data:', response.data)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to add item')
@@ -35,7 +32,6 @@ export const updateCartItemAsync = createAsyncThunk(
   async ({ productId, quantity }, { rejectWithValue }) => {
     try {
       const response = await api.put(`/cart/${productId}`, { quantity })
-      console.log('🛒 UPDATE CART: response:', response)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update item')
@@ -48,7 +44,6 @@ export const removeFromCartAsync = createAsyncThunk(
   async (productId, { rejectWithValue }) => {
     try {
       const response = await api.delete(`/cart/${productId}`)
-      console.log('🛒 REMOVE FROM CART: response:', response)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to remove item')
@@ -73,7 +68,6 @@ export const syncCartAsync = createAsyncThunk(
   async (localCart, { rejectWithValue }) => {
     try {
       const response = await api.post('/cart/sync', { items: localCart.items })
-      console.log('🛒 SYNC CART: response:', response)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to sync cart')
@@ -254,7 +248,6 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false
-        console.log('🛒 FETCH CART REDUCER: action.payload:', action.payload)
         const payload = action.payload?.data || action.payload || {}
         state.items = payload.items || []
         state.subtotal = payload.subtotal || 0
@@ -279,9 +272,7 @@ const cartSlice = createSlice({
       })
       .addCase(addToCartAsync.fulfilled, (state, action) => {
         state.loading = false
-        console.log('🛒 REDUCER: action.payload:', action.payload)
         const payload = action.payload?.data || action.payload || {}
-        console.log('🛒 REDUCER: extracted payload:', payload)
         state.items = payload.items || []
         state.subtotal = payload.subtotal || 0
         state.shipping = payload.shipping || 0
@@ -302,7 +293,6 @@ const cartSlice = createSlice({
       })
       .addCase(updateCartItemAsync.fulfilled, (state, action) => {
         state.loading = false
-        console.log('🛒 UPDATE REDUCER: action.payload:', action.payload)
         const payload = action.payload?.data || action.payload || {}
         state.items = payload.items || []
         state.subtotal = payload.subtotal || 0
@@ -324,7 +314,6 @@ const cartSlice = createSlice({
       })
       .addCase(removeFromCartAsync.fulfilled, (state, action) => {
         state.loading = false
-        console.log('🛒 REMOVE REDUCER: action.payload:', action.payload)
         const payload = action.payload?.data || action.payload || {}
         state.items = payload.items || []
         state.subtotal = payload.subtotal || 0

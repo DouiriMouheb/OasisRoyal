@@ -76,6 +76,21 @@ export const updateOrderStatus = createAsyncThunk(
   }
 )
 
+export const markOrderAsPaid = createAsyncThunk(
+  'admin/markOrderAsPaid',
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/orders/${orderId}`, { 
+        isPaid: true, 
+        paidAt: new Date().toISOString() 
+      })
+      return response // api.js already returns response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to mark order as paid')
+    }
+  }
+)
+
 export const createProduct = createAsyncThunk(
   'admin/createProduct',
   async (productData, { rejectWithValue }) => {
@@ -282,6 +297,26 @@ const adminSlice = createSlice({
         state.successMessage = action.payload.message
       })
       .addCase(updateOrderStatus.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+    
+    // Mark Order as Paid
+    builder
+      .addCase(markOrderAsPaid.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(markOrderAsPaid.fulfilled, (state, action) => {
+        state.loading = false
+        const updatedOrder = action.payload.data
+        const index = state.orders.findIndex(o => o._id === updatedOrder._id)
+        if (index !== -1) {
+          state.orders[index] = updatedOrder
+        }
+        state.successMessage = 'Order marked as paid successfully'
+      })
+      .addCase(markOrderAsPaid.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
       })

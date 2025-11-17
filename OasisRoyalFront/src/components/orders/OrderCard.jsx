@@ -51,24 +51,30 @@ const OrderCard = ({ order }) => {
       {/* Products Preview */}
       <div className="mb-4">
         <div className="flex items-center space-x-2 mb-2">
-          {order.items.slice(0, 3).map((item, index) => (
-            <div
-              key={index}
-              className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200"
-            >
-              {item.product?.images?.[0] ? (
-                <img
-                  src={item.product.images[0]}
-                  alt={item.product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Package className="w-6 h-6 text-gray-400" />
-                </div>
-              )}
-            </div>
-          ))}
+          {order.items.slice(0, 3).map((item, index) => {
+            // Handle both image formats: string or object with url property
+            const firstImage = item.product?.images?.[0]
+            const imageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.url
+            
+            return (
+              <div
+                key={index}
+                className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200"
+              >
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={item.product?.name || 'Product'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-6 h-6 text-gray-400" />
+                  </div>
+                )}
+              </div>
+            )
+          })}
           {order.items.length > 3 && (
             <div className="w-16 h-16 rounded-md bg-gray-100 border border-gray-200 flex items-center justify-center">
               <span className="text-sm font-medium text-gray-600">

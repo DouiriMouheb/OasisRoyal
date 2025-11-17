@@ -18,6 +18,7 @@ import AuthGuard from './components/auth/AuthGuard'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
+import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage'
 import AdminProductsPage from './pages/admin/AdminProductsPage'
 import AdminProductCreatePage from './pages/admin/AdminProductCreatePage'
 import AdminProductEditPage from './pages/admin/AdminProductEditPage'
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
+          <Route path="/admin/orders/:id" element={<AdminOrderDetailPage />} />
           <Route path="/admin/products" element={<AdminProductsPage />} />
           <Route path="/admin/products/create" element={<AdminProductCreatePage />} />
           <Route path="/admin/categories" element={<AdminCategoriesPage />} />

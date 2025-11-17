@@ -29,31 +29,37 @@ const OrderSummary = ({ shippingAddress, paymentMethod, onSubmit, onBack, loadin
           <h2 className="text-xl font-semibold text-gray-900">Order Items</h2>
         </div>
         <div className="space-y-4">
-          {items.map((item) => (
-            <div key={item.product._id} className="flex items-center space-x-4 pb-4 border-b border-gray-200 last:border-0">
-              <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
-                {item.product.images?.[0] ? (
-                  <img
-                    src={item.product.images[0]}
-                    alt={item.product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-6 h-6 text-gray-400" />
-                  </div>
-                )}
+          {items.map((item) => {
+            // Handle both image formats: string or object with url property
+            const firstImage = item.product.images?.[0]
+            const imageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.url
+            
+            return (
+              <div key={item.product._id} className="flex items-center space-x-4 pb-4 border-b border-gray-200 last:border-0">
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={item.product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">{item.product.name}</h4>
+                  <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+                  <p className="text-xs text-gray-600">{formatPrice(item.price)} each</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h4 className="font-medium text-gray-900">{item.product.name}</h4>
-                <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-semibold text-gray-900">{formatPrice(item.price * item.quantity)}</p>
-                <p className="text-xs text-gray-600">{formatPrice(item.price)} each</p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

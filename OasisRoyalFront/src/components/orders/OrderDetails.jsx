@@ -119,31 +119,37 @@ const OrderDetails = ({ order }) => {
         <div className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Items</h3>
           <div className="space-y-4">
-            {order.items.map((item) => (
-              <div key={item._id} className="flex items-center space-x-4 pb-4 border-b border-gray-200 last:border-0">
-                <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
-                  {item.product?.images?.[0] ? (
-                    <img
-                      src={item.product.images[0]}
-                      alt={item.product?.name || 'Product'}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-8 h-8 text-gray-400" />
-                    </div>
-                  )}
+            {order.items.map((item) => {
+              // Handle both image formats: string or object with url property
+              const firstImage = item.product?.images?.[0]
+              const imageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.url
+              
+              return (
+                <div key={item._id} className="flex items-center space-x-4 pb-4 border-b border-gray-200 last:border-0">
+                  <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={item.product?.name || 'Product'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">{item.product?.name || 'Product'}</h4>
+                    <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">{formatPrice(item.price)}</p>
+                    <p className="text-sm text-gray-600">each</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{item.product?.name || 'Product'}</h4>
-                  <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900">{formatPrice(item.price)}</p>
-                  <p className="text-sm text-gray-600">each</p>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </Card>

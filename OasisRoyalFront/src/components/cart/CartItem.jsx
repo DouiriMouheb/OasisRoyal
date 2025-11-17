@@ -9,7 +9,9 @@ const CartItem = ({ item }) => {
   const { increment, decrement, remove } = useCart()
   const { product, quantity } = item
   
-  const imageUrl = product.images?.[0] || IMAGE_PLACEHOLDER
+  // Handle both image formats: string or object with url property
+  const firstImage = product.images?.[0]
+  const imageUrl = typeof firstImage === 'string' ? firstImage : (firstImage?.url || IMAGE_PLACEHOLDER)
   const isLowStock = product.stock <= 5
   const isOutOfStock = product.stock === 0
   const maxQuantity = product.stock
