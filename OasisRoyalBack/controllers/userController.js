@@ -100,6 +100,9 @@ export const updateProfile = async (req, res, next) => {
       user.name = req.body.name || user.name
       user.email = req.body.email || user.email
       user.phone = req.body.phone || user.phone
+      if (req.body.avatar !== undefined) {
+        user.avatar = req.body.avatar
+      }
       if (req.body.address) {
         user.address = { ...user.address, ...req.body.address }
       }
@@ -203,6 +206,9 @@ export const updateUser = async (req, res, next) => {
     user.phone = req.body.phone || user.phone
     user.role = req.body.role || user.role
     user.isActive = req.body.isActive !== undefined ? req.body.isActive : user.isActive
+    if (req.body.avatar !== undefined) {
+      user.avatar = req.body.avatar
+    }
     if (req.body.address) {
       user.address = { ...user.address, ...req.body.address }
     }

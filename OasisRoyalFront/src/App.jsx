@@ -1,13 +1,20 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchCart } from './store/slices/cartSlice'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import Home from './pages/Home'
 import Shop from './pages/Shop'
 import ProductDetailsPage from './pages/ProductDetailsPage'
 import Login from './pages/Login'
+import UserProfile from './pages/UserProfile'
+import OrderHistory from './pages/OrderHistory'
+import OrderDetailsPage from './pages/OrderDetailsPage'
+import Checkout from './pages/Checkout'
 import AuthCallback from './components/auth/AuthCallback'
+import AuthGuard from './components/auth/AuthGuard'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
@@ -19,6 +26,16 @@ import AdminCategoryCreatePage from './pages/admin/AdminCategoryCreatePage'
 import AdminCategoryEditPage from './pages/admin/AdminCategoryEditPage'
 
 export default function App() {
+  const dispatch = useDispatch()
+  const { isAuthenticated } = useSelector((state) => state.auth)
+
+  // Load cart when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchCart())
+    }
+  }, [isAuthenticated, dispatch])
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Toaster 
@@ -51,6 +68,10 @@ export default function App() {
           <Route path="/product/:id" element={<ProductDetailsPage />} />
           <Route path="/product/:id/edit" element={<AdminProductEditPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<AuthGuard><UserProfile /></AuthGuard>} />
+          <Route path="/orders" element={<AuthGuard><OrderHistory /></AuthGuard>} />
+          <Route path="/orders/:id" element={<AuthGuard><OrderDetailsPage /></AuthGuard>} />
+          <Route path="/checkout" element={<AuthGuard><Checkout /></AuthGuard>} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           
           {/* Admin Routes */}

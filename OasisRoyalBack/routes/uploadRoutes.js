@@ -5,7 +5,9 @@ import { protect, authorize } from '../middlewares/auth.js'
 
 const router = express.Router()
 
-router.post('/', protect, authorize('admin'), upload.single('image'), uploadImage)
+// Single image upload - accessible to all authenticated users (for profile pictures)
+router.post('/', protect, upload.single('image'), uploadImage)
+// Multiple images upload - admin only (for product images)
 router.post('/multiple', protect, authorize('admin'), upload.array('images', 10), uploadMultipleImages)
 
 export default router

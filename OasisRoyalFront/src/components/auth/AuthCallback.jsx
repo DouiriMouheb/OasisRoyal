@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { setCredentials } from '../../store/slices/authSlice'
+import { syncCartAsync } from '../../store/slices/cartSlice'
 import Loader from '../common/Loader'
 import toast from 'react-hot-toast'
 
@@ -32,6 +33,14 @@ const AuthCallback = () => {
         
         // Store credentials
         dispatch(setCredentials({ user: userData, token }))
+        
+        // Sync cart after OAuth login
+        const localCart = localStorage.getItem('cart')
+        if (localCart) {
+          const cart = JSON.parse(localCart)
+          console.log('🔐 OAuth: Syncing cart with', cart.items?.length || 0, 'items')
+          dispatch(syncCartAsync(cart))
+        }
         
         // Success message
         toast.success(`Welcome back, ${userData.name}!`)

@@ -116,6 +116,9 @@ router.post('/login', loginValidation, validate, login)
  *                 type: string
  *               phone:
  *                 type: string
+ *               avatar:
+ *                 type: string
+ *                 description: Profile picture URL
  *               address:
  *                 type: object
  *     responses:
@@ -206,6 +209,9 @@ router.route('/')
  *                 enum: [user, admin]
  *               isActive:
  *                 type: boolean
+ *               avatar:
+ *                 type: string
+ *                 description: Profile picture URL
  *               address:
  *                 type: object
  *     responses:

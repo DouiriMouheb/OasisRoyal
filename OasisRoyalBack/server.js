@@ -22,6 +22,7 @@ import uploadRoutes from './routes/uploadRoutes.js'
 import categoryRoutes from './routes/categoryRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
 import authRoutes from './routes/authRoutes.js'
+import cartRoutes from './routes/cartRoutes.js'
 
 // Connect to database
 connectDB()
@@ -121,6 +122,7 @@ app.use('/api/upload', uploadRoutes)
 app.use('/api/categories', categoryRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/cart', cartRoutes)
 
 // Error handler (must be last)
 app.use(errorHandler)

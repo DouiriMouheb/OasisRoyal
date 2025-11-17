@@ -3,6 +3,7 @@ import { User, Menu, X, Search, Shield, Users, ShoppingBag, Package, BarChart3 }
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { logout } from '../../store/slices/authSlice'
+import { clearCart } from '../../store/slices/cartSlice'
 import CartButton from '../cart/CartButton'
 
 const Header = () => {
@@ -12,6 +13,7 @@ const Header = () => {
   
   const handleLogout = () => {
     dispatch(logout())
+    dispatch(clearCart())
   }
   
   return (

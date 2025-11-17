@@ -9,7 +9,7 @@ const CartItem = ({ item }) => {
   const { increment, decrement, remove } = useCart()
   const { product, quantity } = item
   
-  const imageUrl = product.images?.[0]?.url || IMAGE_PLACEHOLDER
+  const imageUrl = product.images?.[0] || IMAGE_PLACEHOLDER
   const isLowStock = product.stock <= 5
   const isOutOfStock = product.stock === 0
   const maxQuantity = product.stock

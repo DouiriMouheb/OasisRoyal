@@ -1,10 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../api'
+import { syncCartAsync } from './cartSlice'
 
 // Async thunks
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue, dispatch }) => {
     try {
       console.log('🔐 LOGIN: Sending credentials:', { email: credentials.email })
       const response = await api.post('/users/login', credentials)
@@ -17,6 +18,15 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem('token', userData.token)
       localStorage.setItem('user', JSON.stringify(userData))
       console.log('🔐 LOGIN: Stored in localStorage')
+      
+      // Sync cart after successful login
+      const localCart = localStorage.getItem('cart')
+      if (localCart) {
+        const cart = JSON.parse(localCart)
+        console.log('🔐 LOGIN: Syncing cart with', cart.items?.length || 0, 'items')
+        dispatch(syncCartAsync(cart))
+      }
+      
       return userData
     } catch (error) {
       console.error('🔐 LOGIN ERROR:', error)
@@ -28,7 +38,7 @@ export const loginUser = createAsyncThunk(
 
 export const registerUser = createAsyncThunk(
   'auth/register',
-  async (userData, { rejectWithValue }) => {
+  async (userData, { rejectWithValue, dispatch }) => {
     try {
       console.log('📝 REGISTER: Sending user data:', { ...userData, password: '***' })
       const response = await api.post('/users/register', userData)
@@ -40,6 +50,15 @@ export const registerUser = createAsyncThunk(
       localStorage.setItem('token', userInfo.token)
       localStorage.setItem('user', JSON.stringify(userInfo))
       console.log('📝 REGISTER: Stored in localStorage')
+      
+      // Sync cart after successful registration
+      const localCart = localStorage.getItem('cart')
+      if (localCart) {
+        const cart = JSON.parse(localCart)
+        console.log('📝 REGISTER: Syncing cart with', cart.items?.length || 0, 'items')
+        dispatch(syncCartAsync(cart))
+      }
+      
       return userInfo
     } catch (error) {
       console.error('📝 REGISTER ERROR:', error)
@@ -114,6 +133,9 @@ const authSlice = createSlice({
       state.user = action.payload.user
       state.token = action.payload.token
       state.isAuthenticated = true
+      // Save to localStorage
+      localStorage.setItem('token', action.payload.token)
+      localStorage.setItem('user', JSON.stringify(action.payload.user))
     }
   },
   extraReducers: (builder) => {
