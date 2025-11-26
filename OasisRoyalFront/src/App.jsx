@@ -42,7 +42,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Toaster 
-        position="top-right"
+        position="top-left"
         toastOptions={{
           duration: 3000,
           style: {

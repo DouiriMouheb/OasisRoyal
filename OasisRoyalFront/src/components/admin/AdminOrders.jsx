@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { Search, Eye, Package as PackageIcon } from 'lucide-react'
+import { Search, Eye } from 'lucide-react'
 import { 
   fetchAllOrders, 
-  updateOrderStatus,
   clearSuccessMessage,
   clearError
 } from '../../store/slices/adminSlice'
@@ -12,7 +11,6 @@ import Loader from '../common/Loader'
 import Card from '../common/Card'
 import Badge from '../common/Badge'
 import Button from '../common/Button'
-import Modal from '../common/Modal'
 import Pagination from '../common/Pagination'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../../utils/formatPrice'
@@ -23,9 +21,6 @@ const AdminOrders = () => {
   const { orders, ordersPagination, ordersLoading, loading, error, successMessage } = useSelector(state => state.admin)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [selectedOrder, setSelectedOrder] = useState(null)
-  const [showStatusModal, setShowStatusModal] = useState(false)
-  const [newStatus, setNewStatus] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   
   useEffect(() => {
@@ -36,7 +31,6 @@ const AdminOrders = () => {
     if (successMessage) {
       toast.success(successMessage)
       dispatch(clearSuccessMessage())
-      setShowStatusModal(false)
     }
   }, [successMessage, dispatch])
   
@@ -56,18 +50,6 @@ const AdminOrders = () => {
       cancelled: 'error'
     }
     return colors[status] || 'default'
-  }
-  
-  const handleStatusChange = (order) => {
-    setSelectedOrder(order)
-    setNewStatus(order.status)
-    setShowStatusModal(true)
-  }
-  
-  const handleUpdateStatus = () => {
-    if (selectedOrder && newStatus) {
-      dispatch(updateOrderStatus({ orderId: selectedOrder._id, status: newStatus }))
-    }
   }
   
   const filteredOrders = orders.filter(order =>
@@ -192,20 +174,11 @@ const AdminOrders = () => {
                       {formatDate(order.createdAt)}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <Link to={`/admin/orders/${order._id}`}>
-                          <Button size="sm" variant="outline">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          onClick={() => handleStatusChange(order)}
-                        >
-                          <PackageIcon className="w-4 h-4" />
+                      <Link to={`/admin/orders/${order._id}`}>
+                        <Button size="sm" variant="outline">
+                          <Eye className="w-4 h-4" />
                         </Button>
-                      </div>
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -229,65 +202,6 @@ const AdminOrders = () => {
           onPageChange={setCurrentPage}
         />
       )}
-      
-      {/* Status Update Modal */}
-      <Modal
-        isOpen={showStatusModal}
-        onClose={() => setShowStatusModal(false)}
-        title="Update Order Status"
-      >
-        {selectedOrder && (
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-600">Order ID</p>
-              <p className="font-medium text-gray-900">#{selectedOrder._id.slice(-8)}</p>
-            </div>
-            
-            <div>
-              <p className="text-sm text-gray-600">Customer</p>
-              <p className="font-medium text-gray-900">{selectedOrder.user?.name}</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Status
-              </label>
-              <div className="space-y-2">
-                {statusOptions.map(status => (
-                  <label key={status} className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      value={status}
-                      checked={newStatus === status}
-                      onChange={(e) => setNewStatus(e.target.value)}
-                      className="mr-2"
-                    />
-                    <Badge variant={getStatusColor(status)}>
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Badge>
-                  </label>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowStatusModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleUpdateStatus}
-                loading={loading}
-              >
-                Update Status
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   )
 }

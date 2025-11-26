@@ -94,6 +94,11 @@ app.get('/', (req, res) => {
   res.json({ success: true, message: 'Oasis Royal API is running' })
 })
 
+// Health check endpoint for Docker
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() })
+})
+
 /**
  * @swagger
  * /api/ping:

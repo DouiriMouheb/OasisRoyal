@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Search, UserCog, Ban, CheckCircle, Shield, User as UserIcon } from 'lucide-react'
+import { Search, Edit, Ban, CheckCircle, Shield, User as UserIcon } from 'lucide-react'
 import { 
   fetchAllUsers, 
-  updateUserRole, 
+  updateUser, 
   toggleUserStatus,
   clearSuccessMessage,
   clearError
@@ -21,8 +21,20 @@ const AdminUsers = () => {
   const { users, usersLoading, loading, error, successMessage } = useSelector(state => state.admin)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedUser, setSelectedUser] = useState(null)
-  const [showRoleModal, setShowRoleModal] = useState(false)
-  const [newRole, setNewRole] = useState('')
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'user',
+    isActive: true,
+    address: {
+      street: '',
+      city: '',
+      postalCode: '',
+      country: ''
+    }
+  })
   
   useEffect(() => {
     dispatch(fetchAllUsers())
@@ -32,7 +44,7 @@ const AdminUsers = () => {
     if (successMessage) {
       toast.success(successMessage)
       dispatch(clearSuccessMessage())
-      setShowRoleModal(false)
+      setShowEditModal(false)
     }
   }, [successMessage, dispatch])
   
@@ -48,15 +60,53 @@ const AdminUsers = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
   
-  const handleRoleChange = (user) => {
+  const handleEditUser = (user) => {
+    console.log('Editing user:', user) // Debug: Check what data we're receiving
     setSelectedUser(user)
-    setNewRole(user.role)
-    setShowRoleModal(true)
+    setFormData({
+      name: user.name || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      role: user.role || 'user',
+      isActive: user.isActive !== undefined ? user.isActive : true,
+      address: user.address ? {
+        street: user.address.street || '',
+        city: user.address.city || '',
+        postalCode: user.address.postalCode || '',
+        country: user.address.country || ''
+      } : {
+        street: '',
+        city: '',
+        postalCode: '',
+        country: ''
+      }
+    })
+    setShowEditModal(true)
   }
   
-  const handleUpdateRole = () => {
-    if (selectedUser && newRole) {
-      dispatch(updateUserRole({ userId: selectedUser._id, role: newRole }))
+  const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target
+    
+    if (name.startsWith('address.')) {
+      const addressField = name.split('.')[1]
+      setFormData(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [addressField]: value
+        }
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }))
+    }
+  }
+  
+  const handleUpdateUser = () => {
+    if (selectedUser) {
+      dispatch(updateUser({ userId: selectedUser._id, userData: formData }))
     }
   }
   
@@ -180,9 +230,9 @@ const AdminUsers = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleRoleChange(user)}
+                          onClick={() => handleEditUser(user)}
                         >
-                          <UserCog className="w-4 h-4" />
+                          <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
@@ -211,61 +261,155 @@ const AdminUsers = () => {
         </Card.Body>
       </Card>
       
-      {/* Role Change Modal */}
+      {/* Edit User Modal */}
       <Modal
-        isOpen={showRoleModal}
-        onClose={() => setShowRoleModal(false)}
-        title="Change User Role"
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="Edit User"
       >
         {selectedUser && (
           <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-600">User</p>
-              <p className="font-medium text-gray-900">{selectedUser.name}</p>
-              <p className="text-sm text-gray-500">{selectedUser.email}</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Role
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    value="user"
-                    checked={newRole === 'user'}
-                    onChange={(e) => setNewRole(e.target.value)}
-                    className="mr-2"
-                  />
-                  <span>User</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name *
                 </label>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    value="admin"
-                    checked={newRole === 'admin'}
-                    onChange={(e) => setNewRole(e.target.value)}
-                    className="mr-2"
-                  />
-                  <span>Admin</span>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
                 </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role *
+                </label>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
             </div>
             
-            <div className="flex justify-end space-x-3 pt-4">
+            <div>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="isActive"
+                  checked={formData.isActive}
+                  onChange={handleFormChange}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium text-gray-700">Active Account</span>
+              </label>
+            </div>
+            
+            <div className="border-t pt-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Address</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Street
+                  </label>
+                  <input
+                    type="text"
+                    name="address.street"
+                    value={formData.address.street}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    name="address.city"
+                    value={formData.address.city}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Postal Code
+                  </label>
+                  <input
+                    type="text"
+                    name="address.postalCode"
+                    value={formData.address.postalCode}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Country
+                  </label>
+                  <input
+                    type="text"
+                    name="address.country"
+                    value={formData.address.country}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 pt-4 border-t">
               <Button
                 variant="outline"
-                onClick={() => setShowRoleModal(false)}
+                onClick={() => setShowEditModal(false)}
               >
                 Cancel
               </Button>
               <Button
                 variant="primary"
-                onClick={handleUpdateRole}
+                onClick={handleUpdateUser}
                 loading={loading}
               >
-                Update Role
+                Update User
               </Button>
             </div>
           </div>

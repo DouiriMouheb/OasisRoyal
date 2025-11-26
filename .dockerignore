@@ -1,0 +1,51 @@
+# Docker
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Environment
+.env
+.env.local
+.env.production
+.env.example
+.env.production.example
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+LICENSE
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Logs
+logs
+*.log
+
+# Testing
+coverage
+.nyc_output
+
+# Build
+dist
+build
+
+# Uploads (local development)
+uploads/*
+!uploads/.gitkeep

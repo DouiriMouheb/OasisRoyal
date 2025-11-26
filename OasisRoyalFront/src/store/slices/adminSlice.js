@@ -38,6 +38,18 @@ export const updateUserRole = createAsyncThunk(
   }
 )
 
+export const updateUser = createAsyncThunk(
+  'admin/updateUser',
+  async ({ userId, userData }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/users/${userId}`, userData)
+      return response // api.js already returns response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update user')
+    }
+  }
+)
+
 export const toggleUserStatus = createAsyncThunk(
   'admin/toggleUserStatus',
   async (userId, { rejectWithValue }) => {
@@ -241,6 +253,23 @@ const adminSlice = createSlice({
         state.successMessage = action.payload.message
       })
       .addCase(updateUserRole.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      // Update User
+      .addCase(updateUser.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.loading = false
+        const index = state.users.findIndex(u => u._id === action.payload.data._id)
+        if (index !== -1) {
+          state.users[index] = action.payload.data
+        }
+        state.successMessage = action.payload.message
+      })
+      .addCase(updateUser.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
       })
