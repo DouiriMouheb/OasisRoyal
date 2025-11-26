@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Plus, Edit, Trash2, Image as ImageIcon } from 'lucide-react'
@@ -8,12 +8,15 @@ import Loader from '../common/Loader'
 import Card from '../common/Card'
 import Badge from '../common/Badge'
 import Button from '../common/Button'
+import Modal from '../common/Modal'
 import toast from 'react-hot-toast'
 
 const AdminCategories = () => {
   const dispatch = useDispatch()
   const { items: categories, loading: categoriesLoading } = useSelector(state => state.categories)
   const { loading, error, successMessage } = useSelector(state => state.admin)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState(null)
   
   useEffect(() => {
     dispatch(fetchCategories())
@@ -24,6 +27,8 @@ const AdminCategories = () => {
       toast.success(successMessage)
       dispatch(clearSuccessMessage())
       dispatch(fetchCategories()) // Refresh list
+      setShowDeleteModal(false)
+      setCategoryToDelete(null)
     }
   }, [successMessage, dispatch])
   
@@ -35,8 +40,13 @@ const AdminCategories = () => {
   }, [error, dispatch])
   
   const handleDelete = (categoryId, categoryName) => {
-    if (window.confirm(`Are you sure you want to delete "${categoryName}"? This action cannot be undone.`)) {
-      dispatch(deleteCategory(categoryId))
+    setCategoryToDelete({ id: categoryId, name: categoryName })
+    setShowDeleteModal(true)
+  }
+  
+  const confirmDelete = () => {
+    if (categoryToDelete) {
+      dispatch(deleteCategory(categoryToDelete.id))
     }
   }
   
@@ -153,6 +163,47 @@ const AdminCategories = () => {
           </Card.Body>
         </Card>
       )}
+      
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setCategoryToDelete(null)
+        }}
+        title="Delete Category"
+        size="sm"
+      >
+        {categoryToDelete && (
+          <div className="space-y-4">
+            <p className="text-gray-700">
+              Are you sure you want to delete <strong>"{categoryToDelete.name}"</strong>?
+            </p>
+            <p className="text-sm text-red-600">
+              This action cannot be undone. All products in this category will need to be reassigned.
+            </p>
+            
+            <div className="flex justify-end space-x-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setCategoryToDelete(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="error"
+                onClick={confirmDelete}
+                loading={loading}
+              >
+                Delete Category
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
